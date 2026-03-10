@@ -434,6 +434,8 @@ options.setUserPreferences({
 
 options.addArguments(
   '--window-size=1600,900',
+  '--no-sandbox',
+  '--disable-dev-shm-usage',
   '--disable-extensions',
   '--disable-infobars',
   '--no-first-run',
@@ -629,9 +631,7 @@ async function automateSigning() {
     return base64Data;
   } catch (error) {
     console.error('An error occurred:', error);
-    // якщо хочеш — можна рестартити тільки на конкретних помилках,
-    // але я не міняю логіку: просто повертаємося як зараз
-    // return restartProcess();
+    throw error;
   } finally {
     // intentionally keep browser open (як у тебе)
   }

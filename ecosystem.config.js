@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "selenium-sign",
-      script: "index.js",
+      script: "start-xvfb.sh",
       cwd: __dirname,
       instances: 1,
       exec_mode: "fork",

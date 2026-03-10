@@ -13,6 +13,10 @@ const createSignedContentHandler = (routeName) => async (req, res) => {
       return automateSigning();
     });
 
+    if (!base64Text) {
+      throw new Error("Signing completed without signed_content");
+    }
+
     res.status(200).json({
       message: "Data received and saved successfully",
       signed_content: base64Text,
