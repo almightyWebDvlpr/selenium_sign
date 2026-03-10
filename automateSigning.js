@@ -530,9 +530,13 @@ async function automateSigning() {
     // ✅ wait until alias block is present & visible
     const aliasBlock = await driver.wait(
       until.elementLocated(By.id('pkReadFileSelectAliasBlock')),
-      15000
+      30000
     );
-    await driver.wait(until.elementIsVisible(aliasBlock), 15000);
+    await driver.wait(async () => {
+      const displayed = await aliasBlock.isDisplayed().catch(() => false);
+      const className = await aliasBlock.getAttribute('class').catch(() => '');
+      return displayed || !String(className).includes('hide');
+    }, 30000);
     console.log('Alias block appeared – file fully loaded');
 
     // Enter the password
@@ -630,11 +634,43 @@ async function automateSigning() {
 
     return base64Data;
   } catch (error) {
+    await captureDebugArtifacts(error).catch(() => {});
     console.error('An error occurred:', error);
     throw error;
   } finally {
     // intentionally keep browser open (як у тебе)
   }
+}
+
+async function captureDebugArtifacts(error) {
+  if (!driver) return;
+
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const debugDir = path.join(downloadsDir, 'debug');
+  fs.mkdirSync(debugDir, { recursive: true });
+
+  const screenshotPath = path.join(debugDir, `failure-${stamp}.png`);
+  const htmlPath = path.join(debugDir, `failure-${stamp}.html`);
+  const metaPath = path.join(debugDir, `failure-${stamp}.txt`);
+
+  const screenshot = await driver.takeScreenshot().catch(() => null);
+  if (screenshot) {
+    fs.writeFileSync(screenshotPath, screenshot, 'base64');
+  }
+
+  const html = await driver.getPageSource().catch(() => '');
+  if (html) {
+    fs.writeFileSync(htmlPath, html, 'utf8');
+  }
+
+  const currentUrl = await driver.getCurrentUrl().catch(() => '');
+  fs.writeFileSync(
+    metaPath,
+    [`error=${error?.stack || error?.message || String(error)}`, `url=${currentUrl}`].join('\n'),
+    'utf8'
+  );
+
+  console.log(`Debug artifacts saved to ${debugDir}`);
 }
 
 // -------------------- DOWNLOAD WAIT --------------------
