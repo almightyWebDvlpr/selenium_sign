@@ -31,6 +31,7 @@ app.use(require('./routes/confluenceSecretAll'));
 app.use(require('./routes/updateConfluenceSecret'));
 app.use(require('./routes/careTeams'));
 app.use('/patient', require('./routes/patient.routes'));
+
 app.use(require('./routes/uploadJpeg'));
 
 // Start server
