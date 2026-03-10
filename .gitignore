@@ -1,0 +1,11 @@
+node_modules/
+chrome-user-data/
+.DS_Store
+.env
+
+# Local runtime artifacts
+state.json
+*.log
+
+# Sensitive signing keys
+*.jks
