@@ -409,8 +409,12 @@ const chrome = require('selenium-webdriver/chrome');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const { loadEnv, requireEnv } = require('./utils/env');
+const { getSavePath, getSourceFilename } = require('./utils/fileHelpers');
 
 let driver;
+
+loadEnv();
 
 // -------------------- CHROME OPTIONS --------------------
 const options = new chrome.Options();
@@ -420,7 +424,7 @@ const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'diia-selenium-'));
 console.log('Chrome profile:', profileDir);
 
 // ✅ (Не ламає логіку) — фіксуємо download dir, щоб очікування файлу було стабільним
-const downloadsDir = path.join(os.homedir(), 'Downloads');
+const downloadsDir = getSavePath();
 options.setUserPreferences({
   'download.default_directory': downloadsDir,
   'download.prompt_for_download': false,
@@ -443,12 +447,12 @@ options.addArguments(
 );
 
 // -------------------- INPUTS --------------------
-const filePath = path.join(__dirname, 'pb_3247112235.jks'); // my
-// const filePath = path.join(__dirname, 'pb_3351001200.jks'); //Ira
-const documentToSignPath = '/Users/serhiikurylenko/Downloads/file-to-safe.txt';
-const baseFileName = 'file-to-safe.txt';
-const password = '1234Azxcvbnm'; // my
+const defaultKeyPath = path.join(__dirname, 'pb_3247112235.jks'); // my
 // const password = 'jE6yvK1uyC'; //Ira
+
+if (String(process.env.SIGNING_HEADLESS || '').toLowerCase() === 'true') {
+  options.addArguments('--headless=new');
+}
 
 // -------------------- DRIVER INIT --------------------
 async function initDriver() {
@@ -475,6 +479,11 @@ async function automateSigning() {
   if (!driver) await initDriver();
 
   try {
+    const configuredKeyPath = process.env.SIGNING_KEY_FILE || defaultKeyPath;
+    const documentToSignPath = path.join(downloadsDir, getSourceFilename());
+    const baseFileName = getSourceFilename();
+    const password = requireEnv('SIGNING_KEY_PASSWORD');
+
     // Navigate to the Diia page
     await driver.get('https://ca.diia.gov.ua/sign');
 
@@ -513,7 +522,7 @@ async function automateSigning() {
 
     // Upload the key file
     const fileInput = await driver.wait(until.elementLocated(By.id('pkReadFileInput')), 15000);
-    await fileInput.sendKeys(filePath);
+    await fileInput.sendKeys(configuredKeyPath);
     console.log('File uploaded');
 
     // ✅ wait until alias block is present & visible

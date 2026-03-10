@@ -1,18 +1,22 @@
 const express = require("express");
 const { automateSigning } = require("../automateSigning");
 const { safeFile } = require("../utils/fileHelpers");
+const { enqueueSigning, getQueueState } = require("../services/signingQueue.service");
 
 const router = express.Router();
 
 const createSignedContentHandler = (routeName) => async (req, res) => {
   try {
     const data = req.body;
-    await safeFile(data);
-    const base64Text = await automateSigning();
+    const base64Text = await enqueueSigning(async () => {
+      await safeFile(data);
+      return automateSigning();
+    });
 
     res.status(200).json({
       message: "Data received and saved successfully",
       signed_content: base64Text,
+      queue: getQueueState(),
     });
   } catch (error) {
     console.error(`Error in ${routeName}:`, error);
