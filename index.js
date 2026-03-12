@@ -9,7 +9,7 @@ loadEnv();
 mongoose.connect(requireEnv('MONGODB_URI'));
 
 const app = express();
-const host = process.env.HOST || '127.0.0.1';
+const host = process.env.HOST || '0.0.0.0';
 const port = Number(process.env.PORT || 3000);
 
 // Middleware
@@ -23,7 +23,6 @@ app.use((err, req, res, next) => {
 
 // app.use(bodyParser.json());
 // app.use(bodyParser.text({ type: "*/*" }));
-
 // Routes
 app.use(require('./routes/health'));
 app.use(require('./routes/logLegalEntityUpdate'));
@@ -36,7 +35,6 @@ app.use(require('./routes/updateConfluenceSecret'));
 app.use(require('./routes/careTeams'));
 app.use('/patient', require('./routes/patient.routes'));
 app.use(require('./routes/uploadJpeg'));
-
 // Start server
 app.listen(port, host, () => {
   console.log(`Server is running on http://${host}:${port}`);

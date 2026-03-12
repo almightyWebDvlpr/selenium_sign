@@ -450,7 +450,6 @@ options.addArguments(
 
 // -------------------- INPUTS --------------------
 const defaultKeyPath = path.join(__dirname, 'pb_3247112235.jks'); // my
-// const password = 'jE6yvK1uyC'; //Ira
 
 if (String(process.env.SIGNING_HEADLESS || '').toLowerCase() === 'true') {
   options.addArguments('--headless=new');

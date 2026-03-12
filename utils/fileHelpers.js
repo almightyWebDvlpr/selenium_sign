@@ -7,7 +7,8 @@ const { loadEnv } = require("./env");
 
 loadEnv();
 
-const savePath = process.env.SIGNING_WORK_DIR || path.join(os.tmpdir(), "selenium_sign");
+const savePath =
+  process.env.SIGNING_WORK_DIR || path.join(os.homedir(), "Downloads", "selenium_sign");
 
 async function ensureSavePath() {
   await fs.mkdir(savePath, { recursive: true });
